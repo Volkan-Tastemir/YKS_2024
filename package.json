@@ -1,0 +1,15 @@
+{
+  "name": "yks-panel",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+    "dev:api": "cd api && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd api && npm start"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
