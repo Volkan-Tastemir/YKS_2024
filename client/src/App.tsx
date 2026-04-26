@@ -31,16 +31,25 @@ function App() {
   const [filtreEski, setFiltreEski] = useState(true)
 
   const okulAra = useCallback(async (query: string) => {
-    if (query.length < 2) {
+    if (query.length < 3) {
       setOkullar([])
       return
     }
     try {
-      const res = await fetch(`${API_URL}/api/okullar?aranan=${encodeURIComponent(query)}`)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      
+      const res = await fetch(`${API_URL}/api/okullar?aranan=${encodeURIComponent(query)}`, {
+        signal: controller.signal
+      })
+      clearTimeout(timeoutId)
+      
       const data = await res.json()
       setOkullar(data.okullar || [])
     } catch (e) {
-      console.error('Arama hatası:', e)
+      if (e.name !== 'AbortError') {
+        console.error('Arama hatası:', e)
+      }
     }
   }, [])
 
@@ -52,7 +61,7 @@ function App() {
     return () => clearTimeout(timeout)
   }, [arama, okulAra])
 
-  const okulSec = async (okulAdi: string) => {
+const okulSec = async (okulAdi: string) => {
     setSeciliOkul(okulAdi)
     setArama(okulAdi)
     setOkullar([])
@@ -62,17 +71,28 @@ function App() {
 
     try {
       const params = new URLSearchParams({
-        filter_yeni: filtreYeni.toString(),
-        filter_eski: filtreEski.toString()
+        filter_yeni: String(filtreYeni),
+        filter_eski: String(filtreEski)
       })
-      const res = await fetch(`${API_URL}/api/okul/${encodeURIComponent(okulAdi)}?${params}`)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
+      
+      const res = await fetch(`${API_URL}/api/okul/${encodeURIComponent(okulAdi)}?${params}`, {
+        signal: controller.signal
+      })
+      clearTimeout(timeoutId)
+      
       if (!res.ok) throw new Error('Veri bulunamadı')
       const data = await res.json()
       setVeri(data)
-    } catch (e) {
-      setHata('Okul bulunamadı veya veri yok')
+    } catch (e: any) {
+      if (e.name === 'AbortError') {
+        setHata('İstek zaman aşımına uğradı')
+      } else {
+        setHata('Okul bulunamadı veya veri yok')
+      }
       setVeri(null)
-    } finally {
+} finally {
       setYukleniyor(false)
     }
   }
