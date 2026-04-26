@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const API_URL = 'http://localhost:3002'
+const API_URL = 'https://yks-api.onrender.com'
 
 interface OkulVeri {
   university: string
