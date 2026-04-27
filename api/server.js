@@ -64,10 +64,10 @@ app.get('/api/tum-okullar', async (req, res) => {
 });
 
 app.get('/api/okul/:okulAdi', async (req, res) => {
-  const okulAdi = decodeURIComponent(req.params.okulAdi);
+  const okulAdi = req.params.okulAdi;
   const { filter_yeni, filter_eski } = req.query;
 
-  console.log('Requested school:', okulAdi);
+  console.log('Requested school (raw):', okulAdi);
 
   const filterYeni = filter_yeni === 'true';
   const filterEski = filter_eski === 'true';
