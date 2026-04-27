@@ -2,6 +2,5 @@ node_modules/
 dist/
 .env
 *.log
-api/
-client/
-api-deploy/data.json
+*.db
+*.db-journal

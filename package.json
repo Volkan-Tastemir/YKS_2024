@@ -2,6 +2,10 @@
   "name": "yks-panel",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "api",
+    "client"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
     "dev:api": "cd api && npm run dev",
