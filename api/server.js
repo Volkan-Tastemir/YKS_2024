@@ -95,6 +95,7 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
         SUM(early_graduated) as eski_mezun
       FROM highschools
       WHERE school_name = ?
+      GROUP BY university_name, name_of_field
     `;
 
     const rows = await fetchAll(db, sql, [okulAdi]);
