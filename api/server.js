@@ -138,6 +138,16 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+app.get('*', (req, res) => {
+  const clientDist = path.join(__dirname, '..', 'client', 'dist');
+  const indexPath = path.join(clientDist, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('Client build not found');
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
