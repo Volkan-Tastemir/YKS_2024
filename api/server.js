@@ -11,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientDist));
+
 const PORT = process.env.PORT || 3002;
 
 const dbPath = path.join(__dirname, 'yks.db');
