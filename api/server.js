@@ -64,6 +64,8 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
   const okulAdi = decodeURIComponent(req.params.okulAdi);
   const { filter_yeni, filter_eski } = req.query;
 
+  console.log('Requested school:', okulAdi);
+
   const filterYeni = filter_yeni === 'true';
   const filterEski = filter_eski === 'true';
 
@@ -79,6 +81,7 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
   let db;
   try {
     db = await openDb();
+    console.log('DB opened, querying for:', okulAdi);
 
     const sql = `
       SELECT university_name, name_of_field,
@@ -89,6 +92,7 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
     `;
 
     const rows = await fetchAll(db, sql, [okulAdi]);
+    console.log('Query results:', rows.length);
 
     const results = rows.map(r => ({
       university: r.university_name,
@@ -111,8 +115,8 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
       sonuclar: results.slice(0, 100)
     });
   } catch (err) {
-    console.error('Query error:', err);
-    res.status(500).json({ error: 'Database query failed' });
+    console.error('Query error for', okulAdi, ':', err);
+    res.status(500).json({ error: 'Database query failed', details: err.message });
   } finally {
     if (db) await close(db);
   }
