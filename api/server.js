@@ -91,8 +91,8 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
 
     const sql = `
       SELECT university_name, name_of_field,
-        SUM(ilk_kazanan) as yeni_mezun,
-        SUM(sonraki_kazanan) as eski_mezun
+        SUM(new_graduated) as yeni_mezun,
+        SUM(early_graduated) as eski_mezun
       FROM highschools
       WHERE school_name = ?
     `;
