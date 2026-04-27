@@ -16,29 +16,25 @@ app.use(express.static(clientDist));
 
 const PORT = process.env.PORT || 3002;
 
-const dbPath = path.join(__dirname, 'yks.db');
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.get('/api/okullar', async (req, res) => {
   const { aranan } = req.query;
-  
+
   let db;
   try {
     db = await openDb();
-    
+
     if (!aranan || aranan.length < 2) {
       res.json({ okullar: [] });
       return;
     }
-    
+
     const sql = `
-      SELECT DISTINCT school_name 
-      FROM highschools 
+      SELECT DISTINCT school_name
+      FROM highschools
       WHERE school_name LIKE ?
       LIMIT 20
     `;
-    
+
     const rows = await fetchAll(db, sql, [`%${aranan}%`]);
     const okullar = rows.map(r => r.school_name);
     res.json({ okullar });
@@ -53,10 +49,10 @@ app.listen(PORT, () => {
 app.get('/api/okul/:okulAdi', async (req, res) => {
   const okulAdi = decodeURIComponent(req.params.okulAdi);
   const { filter_yeni, filter_eski } = req.query;
-  
+
   const filterYeni = filter_yeni === 'true';
   const filterEski = filter_eski === 'true';
-  
+
   if (!filterYeni && !filterEski) {
     res.json({
       okul_adi: okulAdi,
@@ -65,21 +61,21 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
     });
     return;
   }
-  
+
   let db;
   try {
     db = await openDb();
-    
-    let sql = `
+
+    const sql = `
       SELECT university_name, name_of_field,
         SUM(ilk_kazanan) as yeni_mezun,
         SUM(sonraki_kazanan) as eski_mezun
       FROM highschools
       WHERE school_name = ?
     `;
-    
+
     const rows = await fetchAll(db, sql, [okulAdi]);
-    
+
     const results = rows.map(r => ({
       university: r.university_name,
       bolum: r.name_of_field,
@@ -87,10 +83,10 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
       eski_mezun: r.eski_mezun || 0,
       toplam: (r.yeni_mezun || 0) + (r.eski_mezun || 0)
     })).filter(r => r.toplam > 0).sort((a, b) => b.toplam - a.toplam);
-    
+
     const totalStudents = results.reduce((sum, r) => sum + r.toplam, 0);
     const uniqueUniversities = new Set(results.map(r => r.university)).size;
-    
+
     res.json({
       okul_adi: okulAdi,
       istatistik: {
