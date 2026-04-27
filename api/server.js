@@ -3,6 +3,8 @@ import cors from 'cors';
 import { openDb, fetchAll, close } from './sql.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
+import sqlite3 from 'sqlite3';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +19,44 @@ app.use(express.static(clientDist));
 const PORT = process.env.PORT || 3002;
 
 const dbPath = path.join(__dirname, 'yks.db');
+
+async function initDb() {
+  if (fs.existsSync(dbPath)) return;
+
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath);
+    db.serialize(() => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS highschools (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          school_name TEXT,
+          university_name TEXT,
+          name_of_field TEXT,
+          ilk_kazanan INTEGER DEFAULT 0,
+          sonraki_kazanan INTEGER DEFAULT 0
+        )
+      `, (err) => {
+        if (err) { reject(err); return; }
+
+        const dataPath = path.join(__dirname, 'data.json');
+        if (!fs.existsSync(dataPath)) { db.close(); resolve(); return; }
+
+        const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+        const stmt = db.prepare(`
+          INSERT INTO highschools (school_name, university_name, name_of_field, ilk_kazanan, sonraki_kazanan)
+          VALUES (?, ?, ?, ?, ?)
+        `);
+
+        for (const row of data) {
+          stmt.run(row.school_name, row.university_name, row.name_of_field, row.ilk_kazanan, row.sonraki_kazanan);
+        }
+
+        stmt.finalize();
+        db.close(() => resolve());
+      });
+    });
+  });
+}
 
 app.get('/api/okullar', async (req, res) => {
   const { aranan } = req.query;
@@ -119,6 +159,11 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('DB init error:', err);
+  process.exit(1);
 });
