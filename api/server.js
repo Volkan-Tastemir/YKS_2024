@@ -107,7 +107,11 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
       yeni_mezun: r.yeni_mezun || 0,
       eski_mezun: r.eski_mezun || 0,
       toplam: (r.yeni_mezun || 0) + (r.eski_mezun || 0)
-    })).filter(r => r.toplam > 0).sort((a, b) => b.toplam - a.toplam);
+    })).filter(r => {
+      if (!filterYeni && filterEski) return r.eski_mezun > 0;
+      if (filterYeni && !filterEski) return r.yeni_mezun > 0;
+      return r.toplam > 0;
+    }).sort((a, b) => b.toplam - a.toplam);
 
     const totalStudents = results.reduce((sum, r) => sum + r.toplam, 0);
     const uniqueUniversities = new Set(results.map(r => r.university)).size;
