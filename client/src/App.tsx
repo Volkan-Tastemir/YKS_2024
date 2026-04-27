@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import Fuse from 'fuse.js';
 
 interface OkulVeri {
   university: string
@@ -21,6 +22,7 @@ interface ApiSonuc {
 function App() {
   const [arama, setArama] = useState('')
   const [okullar, setOkullar] = useState<string[]>([])
+  const [tumOkullar, setTumOkullar] = useState<string[]>([])
   const [seciliOkul, setSeciliOkul] = useState<string | null>(null)
   const [veri, setVeri] = useState<ApiSonuc | null>(null)
   const [yukleniyor, setYukleniyor] = useState(false)
@@ -28,28 +30,23 @@ function App() {
   const [filtreYeni, setFiltreYeni] = useState(true)
   const [filtreEski, setFiltreEski] = useState(true)
 
+  const fuse = useMemo(() => new Fuse(tumOkullar, { threshold: 0.3 }), [tumOkullar]);
+
+  useEffect(() => {
+    fetch('/api/tum-okullar')
+      .then(res => res.json())
+      .then(data => setTumOkullar(data))
+      .catch(err => console.error('Okul listesi yüklenemedi:', err));
+  }, []);
+
   const okulAra = useCallback(async (query: string) => {
-    if (query.length < 3) {
+    if (query.length < 2) {
       setOkullar([])
       return
     }
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-      
-      const res = await fetch(`/api/okullar?aranan=${encodeURIComponent(query)}`, {
-        signal: controller.signal
-      })
-      clearTimeout(timeoutId)
-      
-      const data = await res.json()
-      setOkullar(data.okullar || [])
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        console.error('Arama hatası:', e)
-      }
-    }
-  }, [])
+    const results = fuse.search(query).slice(0, 20).map(r => r.item)
+    setOkullar(results)
+  }, [fuse])
 
   useEffect(() => {
     const timeout = setTimeout(() => okulAra(arama), 300)

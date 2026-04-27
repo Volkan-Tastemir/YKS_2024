@@ -19,14 +19,14 @@ const PORT = process.env.PORT || 3002;
 app.get('/api/okullar', async (req, res) => {
   const { aranan } = req.query;
 
+  if (!aranan || aranan.length < 2) {
+    res.json({ okullar: [] });
+    return;
+  }
+
   let db;
   try {
     db = await openDb();
-
-    if (!aranan || aranan.length < 2) {
-      res.json({ okullar: [] });
-      return;
-    }
 
     const sql = `
       SELECT DISTINCT school_name
@@ -38,6 +38,20 @@ app.get('/api/okullar', async (req, res) => {
     const rows = await fetchAll(db, sql, [`%${aranan}%`]);
     const okullar = rows.map(r => r.school_name);
     res.json({ okullar });
+  } catch (err) {
+    console.error('Query error:', err);
+    res.status(500).json({ error: 'Database query failed' });
+  } finally {
+    if (db) await close(db);
+  }
+});
+
+app.get('/api/tum-okullar', async (req, res) => {
+  let db;
+  try {
+    db = await openDb();
+    const rows = await fetchAll(db, 'SELECT DISTINCT school_name FROM highschools ORDER BY school_name');
+    res.json(rows.map(r => r.school_name));
   } catch (err) {
     console.error('Query error:', err);
     res.status(500).json({ error: 'Database query failed' });
