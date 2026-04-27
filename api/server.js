@@ -64,10 +64,10 @@ app.get('/api/tum-okullar', async (req, res) => {
 });
 
 app.get('/api/okul/:okulAdi', async (req, res) => {
-  const okulAdi = req.params.okulAdi;
+  let okulAdi = decodeURIComponent(req.params.okulAdi);
   const { filter_yeni, filter_eski } = req.query;
 
-  console.log('Requested school (raw):', okulAdi);
+  console.log('Requested school (decoded):', okulAdi);
 
   const filterYeni = filter_yeni === 'true';
   const filterEski = filter_eski === 'true';
@@ -84,7 +84,10 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
   let db;
   try {
     db = await openDb();
-    console.log('DB opened, querying for:', okulAdi);
+
+    const checkSql = `SELECT COUNT(*) as count FROM highschools WHERE school_name = ?`;
+    const checkResult = await fetchAll(db, checkSql, [okulAdi]);
+    console.log('School count:', checkResult[0].count);
 
     const sql = `
       SELECT university_name, name_of_field,

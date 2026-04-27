@@ -72,7 +72,7 @@ const okulSec = async (okulAdi: string) => {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000)
 
-      const res = await fetch(`/api/okul/${okulAdi}?${params}`, {
+      const res = await fetch(`/api/okul/${encodeURIComponent(okulAdi)}?${params}`, {
         signal: controller.signal
       })
       clearTimeout(timeoutId)
