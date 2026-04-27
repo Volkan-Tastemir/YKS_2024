@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const API_URL = 'http://localhost:3002'
-
 interface OkulVeri {
   university: string
   bolum: string
@@ -39,7 +37,7 @@ function App() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000)
       
-      const res = await fetch(`${API_URL}/api/okullar?aranan=${encodeURIComponent(query)}`, {
+      const res = await fetch(`/api/okullar?aranan=${encodeURIComponent(query)}`, {
         signal: controller.signal
       })
       clearTimeout(timeoutId)
@@ -77,7 +75,7 @@ const okulSec = async (okulAdi: string) => {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000)
       
-      const res = await fetch(`${API_URL}/api/okul/${encodeURIComponent(okulAdi)}?${params}`, {
+      const res = await fetch(`/api/okul/${encodeURIComponent(okulAdi)}?${params}`, {
         signal: controller.signal
       })
       clearTimeout(timeoutId)
@@ -108,7 +106,7 @@ const okulSec = async (okulAdi: string) => {
         filter_yeni: String(filtreYeni),
         filter_eski: String(filtreEski)
       })
-      const url = `${API_URL}/api/okul/${encodeURIComponent(okul)}?${params}`
+      const url = `/api/okul/${encodeURIComponent(okul)}?${params}`
       const res = await fetch(url)
       const data = await res.json()
       setVeri(data)
