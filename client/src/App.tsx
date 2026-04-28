@@ -288,44 +288,46 @@ const okulSec = async (okulAdi: string) => {
           )}
 
           <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', overflow: 'hidden' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Üniversite</th>
-                  <th>Bölüm</th>
-                  {filtreYeni && <th style={{ textAlign: 'right' }}>Yeni Mezun</th>}
-                  {filtreEski && <th style={{ textAlign: 'right' }}>Eski Mezun</th>}
-                  {filtreYeni && filtreEski && <th style={{ textAlign: 'right' }}>Toplam</th>}
-                  <th style={{ textAlign: 'right' }}>%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {veri.sonuclar.map((item, idx) => {
-                  const yuzde = veri.istatistik.toplam_ogrenci > 0 
-                    ? ((item.toplam / veri.istatistik.toplam_ogrenci) * 100).toFixed(1)
-                    : '0'
-                  return (
-                    <tr key={idx}>
-                      <td style={{ fontWeight: 500 }}>{item.university}</td>
-                      <td>{item.bolum}</td>
-                      {filtreYeni && <td style={{ textAlign: 'right' }}>{item.yeni_mezun}</td>}
-                      {filtreEski && <td style={{ textAlign: 'right' }}>{item.eski_mezun}</td>}
-                      {filtreYeni && filtreEski && <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{item.toplam}</td>}
-                      <td style={{ textAlign: 'right' }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                          color: '#60a5fa'
-                        }}>
-                          %{yuzde}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ width: '100%', minWidth: '600px' }}>
+                <thead>
+                  <tr>
+                    <th style={{ padding: '12px 16px', textAlign: 'left' }}>Üniversite</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left' }}>Bölüm</th>
+                    {filtreYeni && <th style={{ padding: '12px 16px', textAlign: 'right' }}>Yeni Mezun</th>}
+                    {filtreEski && <th style={{ padding: '12px 16px', textAlign: 'right' }}>Eski Mezun</th>}
+                    {filtreYeni && filtreEski && <th style={{ padding: '12px 16px', textAlign: 'right' }}>Toplam</th>}
+                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {veri.sonuclar.map((item, idx) => {
+                    const yuzde = veri.istatistik.toplam_ogrenci > 0 
+                      ? ((item.toplam / veri.istatistik.toplam_ogrenci) * 100).toFixed(1)
+                      : '0'
+                    return (
+                      <tr key={idx} style={{ borderTop: '1px solid #334155' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: 500 }}>{item.university}</td>
+                        <td style={{ padding: '12px 16px' }}>{item.bolum}</td>
+                        {filtreYeni && <td style={{ padding: '12px 16px', textAlign: 'right' }}>{item.yeni_mezun}</td>}
+                        {filtreEski && <td style={{ padding: '12px 16px', textAlign: 'right' }}>{item.eski_mezun}</td>}
+                        {filtreYeni && filtreEski && <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 'bold' }}>{item.toplam}</td>}
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                            color: '#60a5fa'
+                          }}>
+                            %{yuzde}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
