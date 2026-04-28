@@ -29,6 +29,7 @@ function App() {
   const [hata, setHata] = useState<string | null>(null)
   const [filtreYeni, setFiltreYeni] = useState(true)
   const [filtreEski, setFiltreEski] = useState(true)
+  const [kopyalandi, setKopyalandi] = useState(false)
 
   const fuse = useMemo(() => new Fuse(tumOkullar, { threshold: 0.3 }), [tumOkullar]);
 
@@ -130,6 +131,22 @@ const okulSec = async (okulAdi: string) => {
 
   return (
     <div style={{ minHeight: '100vh', padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      {kopyalandi && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#10b981',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          zIndex: 1000,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          fontSize: '0.9rem'
+        }}>
+          Tablo kopyalandı!
+        </div>
+      )}
       <header style={{ marginBottom: '32px', textAlign: 'center' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '8px' }}>
           YKS 2024 - Üniversite Tercih Analizi
@@ -265,12 +282,18 @@ const okulSec = async (okulAdi: string) => {
           {veri && veri.sonuclar && veri.sonuclar.length > 0 && (
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'flex-end' }}>
               <button
-                onClick={() => {
+                onClick={async () => {
                   const satir = ['Üniversite\tBölüm' + (filtreYeni ? '\tYeni Mezun' : '') + (filtreEski ? '\tEski Mezun' : '') + (filtreYeni && filtreEski ? '\tToplam' : '') + '\t%']
                     .concat(veri.sonuclar.map((item: any) => 
                       [item.university, item.bolum, filtreYeni ? item.yeni_mezun : '', filtreEski ? item.eski_mezun : '', (filtreYeni && filtreEski ? item.toplam : ''), veri.istatistik.toplam_ogrenci > 0 ? ((item.toplam / veri.istatistik.toplam_ogrenci) * 100).toFixed(1) + '%' : '0%'].join('\t')
                     ))
-                  navigator.clipboard.writeText(satir.join('\n'))
+                  try {
+                    await navigator.clipboard.writeText(satir.join('\n'))
+                    setKopyalandi(true)
+                    setTimeout(() => setKopyalandi(false), 2000)
+                  } catch (e) {
+                    console.error('Kopyalama hatası:', e)
+                  }
                 }}
                 style={{
                   padding: '8px 16px',
