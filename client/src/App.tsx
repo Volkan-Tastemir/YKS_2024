@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Fuse from 'fuse.js';
 
 interface OkulVeri {
@@ -30,6 +30,7 @@ function App() {
   const [filtreYeni, setFiltreYeni] = useState(true)
   const [filtreEski, setFiltreEski] = useState(true)
   const [kopyalandi, setKopyalandi] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
 
   const fuse = useMemo(() => new Fuse(tumOkullar, { threshold: 0.3 }), [tumOkullar]);
 
@@ -58,6 +59,14 @@ function App() {
   }, [arama, okulAra])
 
 const okulSec = async (okulAdi: string) => {
+    if (!filtreYeni && !filtreEski) return
+
+    if (abortRef.current) {
+      abortRef.current.abort()
+    }
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setSeciliOkul(okulAdi)
     setArama(okulAdi)
     setOkullar([])
@@ -70,7 +79,6 @@ const okulSec = async (okulAdi: string) => {
         filter_yeni: String(filtreYeni),
         filter_eski: String(filtreEski)
       })
-      const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000)
 
       const res = await fetch(`/api/okul/${encodeURIComponent(okulAdi)}?${params}`, {
@@ -78,41 +86,60 @@ const okulSec = async (okulAdi: string) => {
       })
       clearTimeout(timeoutId)
       
+      if (controller.signal.aborted) return
       if (!res.ok) throw new Error('Veri bulunamadı')
       const data = await res.json()
       setVeri(data)
     } catch (e: any) {
       if (e.name === 'AbortError') {
-        setHata('İstek zaman aşımına uğradı')
+        if (!controller.signal.aborted) {
+          setHata('İstek zaman aşımına uğradı')
+        }
       } else {
         setHata('Okul bulunamadı veya veri yok')
       }
       setVeri(null)
 } finally {
-      setYukleniyor(false)
+      if (!controller.signal.aborted) {
+        setYukleniyor(false)
+      }
     }
   }
 
   const filtreleriGuncelle = async () => {
+    if (!filtreYeni && !filtreEski) return
+
     const okul = seciliOkul
     if (!okul) return
-    
+
+    if (abortRef.current) {
+      abortRef.current.abort()
+    }
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setYukleniyor(true)
-    
+
     try {
       const params = new URLSearchParams({
         filter_yeni: String(filtreYeni),
         filter_eski: String(filtreEski)
       })
       const url = `/api/okul/${encodeURIComponent(okul)}?${params}`
-      const res = await fetch(url)
+      const res = await fetch(url, { signal: controller.signal })
+      if (controller.signal.aborted) return
+      if (!res.ok) throw new Error('Veri bulunamadı')
       const data = await res.json()
       setVeri(data)
-    } catch (e) {
-      setHata('Veri yüklenirken hata oluştu')
-      setVeri(null)
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        setHata('Veri yüklenirken hata oluştu')
+        setVeri(null)
+      }
     } finally {
-      setYukleniyor(false)
+      if (!controller.signal.aborted) {
+        setYukleniyor(false)
+      }
     }
   }
 
@@ -120,6 +147,11 @@ const okulSec = async (okulAdi: string) => {
     if (seciliOkul) {
       if (!filtreYeni && !filtreEski) {
         setVeri(null)
+        setYukleniyor(false)
+        setHata(null)
+        if (abortRef.current) {
+          abortRef.current.abort()
+        }
       } else {
         setHata(null)
         filtreleriGuncelle()
