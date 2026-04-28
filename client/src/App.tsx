@@ -127,7 +127,7 @@ const okulSec = async (okulAdi: string) => {
     }
   }, [seciliOkul, filtreYeni, filtreEski])
 
-  const hataGoster = (!filtreYeni && !filtreEski) ? 'En az bir mezun türü seçilmeli' : hata 
+  const hataGoster = hata 
 
   return (
     <div style={{ minHeight: '100vh', padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -212,24 +212,32 @@ const okulSec = async (okulAdi: string) => {
         </div>
 
         <div style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={filtreYeni}
-              onChange={(e) => setFiltreYeni(e.target.checked)}
-              style={{ width: '20px', height: '20px', accentColor: '#2563eb' }}
-            />
-            <span>Yeni Mezun (İlk denemede kazanan)</span>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={filtreEski}
-              onChange={(e) => setFiltreEski(e.target.checked)}
-              style={{ width: '20px', height: '20px', accentColor: '#2563eb' }}
-            />
-            <span>Eski Mezun (Sonraki yıllarda kazanan)</span>
-          </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={filtreYeni}
+                onChange={(e) => {
+                  const yeniDeger = e.target.checked
+                  if (!yeniDeger && !filtreEski) return
+                  setFiltreYeni(yeniDeger)
+                }}
+                style={{ width: '20px', height: '20px', accentColor: '#2563eb' }}
+              />
+              <span>Yeni Mezun (İlk denemede kazanan)</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={filtreEski}
+                onChange={(e) => {
+                  const yeniDeger = e.target.checked
+                  if (!yeniDeger && !filtreYeni) return
+                  setFiltreEski(yeniDeger)
+                }}
+                style={{ width: '20px', height: '20px', accentColor: '#2563eb' }}
+              />
+              <span>Eski Mezun (Sonraki yıllarda kazanan)</span>
+            </label>
         </div>
       </div>
 
