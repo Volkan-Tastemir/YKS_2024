@@ -1,0 +1,9 @@
+import {openDb, fetchAll, close} from './sql. js';
+(async () => {
+  const db = await openDb();
+  const r = await fetchAll( db, 'SELECT school_ name, university_ name, name_ of_ field, new_ graduated, early_ graduated FROM highschools WHERE school_ name LIKE ?', ['%İSTANBUL ÜSKÜDAR LİSESİ%']);
+  console. log('Total rows:', r. length);
+  const m = r. filter( x => x. university_ name && x. university_ name. includes('MEDENİYET'));
+  console. log('Medeniyet:', JSON. stringify( m, null, 2));
+  await close( db);
+})();

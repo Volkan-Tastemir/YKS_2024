@@ -123,7 +123,7 @@ app.get('/api/okul/:okulAdi', async (req, res) => {
         universite_sayisi: uniqueUniversities,
         bolum_sayisi: results.length
       },
-      sonuclar: results.slice(0, 100)
+      sonuclar: results
     });
   } catch (err) {
     console.error('Query error for', okulAdi, ':', err);
